@@ -38,7 +38,7 @@ def _has_any(message: str, phrases: tuple[str, ...]) -> bool:
 
 def decide(request: LeadRequest) -> Decision:
     """Return the next *proposed* action, never execute one."""
-    if not re.fullmatch(r"[a-zA-Z0-9_-]{1,64}", request.tenant_id):
+    if not isinstance(request.tenant_id, str) or not re.fullmatch(r"[a-zA-Z0-9_-]{1,64}", request.tenant_id):
         raise ValueError("tenant_id must be a nonempty safe identifier")
     if not isinstance(request.message, str):
         raise ValueError("message must be a string")
