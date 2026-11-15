@@ -30,6 +30,12 @@ class SalesPolicyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             decide(LeadRequest("../another-tenant", "book", True))
 
+    def test_non_string_tenant_identifiers_rejected(self):
+        for tenant_id in (None, 123, [], {}):
+            with self.subTest(tenant_id=tenant_id):
+                with self.assertRaisesRegex(ValueError, "tenant_id must be a nonempty safe identifier"):
+                    decide(LeadRequest(tenant_id, "book", True))
+
     def test_non_string_messages_rejected(self):
         for message in (None, 123, [], {}):
             with self.subTest(message=message):
