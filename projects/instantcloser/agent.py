@@ -44,6 +44,10 @@ def decide(request: LeadRequest) -> Decision:
         raise ValueError("message must be a string")
     if not 1 <= len(request.message) <= 2000:
         raise ValueError("message length must be 1..2000 characters")
+    if type(request.consent_to_contact) is not bool:
+        raise ValueError("consent_to_contact must be a boolean")
+    if type(request.active_objection) is not bool:
+        raise ValueError("active_objection must be a boolean")
     message = _normalize(request.message)
 
     # Highest-priority controls: a buyer's refusal and attempted instruction override.
