@@ -30,6 +30,32 @@ class SalesPolicyTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             decide(LeadRequest("../another-tenant", "book", True))
 
+    def test_non_string_tenant_identifiers_rejected(self):
+        for tenant_id in (None, 123, [], {}):
+            with self.subTest(tenant_id=tenant_id):
+                with self.assertRaisesRegex(ValueError, "tenant_id must be a nonempty safe identifier"):
+                    decide(LeadRequest(tenant_id, "book", True))
+
+    def test_non_string_messages_rejected(self):
+        for message in (None, 123, [], {}):
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(ValueError, "message must be a string"):
+                    decide(LeadRequest("tenant_a", message, True))
+
+    def test_non_boolean_policy_flags_rejected(self):
+        for invalid in (None, 0, 1, "false", [], {}):
+            with self.subTest(field="consent_to_contact", invalid=invalid):
+                with self.assertRaisesRegex(ValueError, "consent_to_contact must be a boolean"):
+                    decide(LeadRequest("tenant_a", "book", invalid))
+            with self.subTest(field="active_objection", invalid=invalid):
+                with self.assertRaisesRegex(ValueError, "active_objection must be a boolean"):
+                    decide(LeadRequest("tenant_a", "book", True, invalid))
+
+    def test_boolean_policy_flags_preserve_behavior(self):
+        self.assertEqual(decide(LeadRequest("tenant_a", "book", False)).action, "request_consent")
+        self.assertEqual(decide(LeadRequest("tenant_a", "book", True, False)).action, "propose_slots")
+        self.assertEqual(decide(LeadRequest("tenant_a", "book", True, True)).action, "clarify_objection")
+
     def test_empty_and_long_messages_rejected(self):
         for message in ("", "x" * 2001):
             with self.subTest(length=len(message)):
